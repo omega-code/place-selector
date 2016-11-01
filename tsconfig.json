@@ -1,0 +1,10 @@
+{
+    "compilerOptions": {
+        "module": "commonjs"
+    },
+    "files": [
+      "src/script.ts",
+      "src/typings/interact.d.ts"
+
+    ]
+}
