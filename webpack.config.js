@@ -1,14 +1,15 @@
 module.exports = {
-  entry: './src/script.ts',
-  output: {
-    filename: 'bundle.js'
-  },
-  resolve: {
-    extensions: ['', '.webpack.js', '.web.js', '.ts', '.js']
-  },
-  module: {
-    loaders: [
-      { test: /\.ts$/, loader: 'ts-loader' }
-    ]
-  }
+      entry: './src/ts/app.ts',
+      output: {
+          filename: './dist/bundle.js'
+      },
+      resolve: {
+          extensions: ['', '.webpack.js', '.web.js', '.ts', '.js']
+      },
+      module: {
+          loaders: [
+              { test: /\.ts$/, loader: 'ts-loader' },
+              { test: /\.css$/, loader: 'style!css' }
+          ]
+      }
 }

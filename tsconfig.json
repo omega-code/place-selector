@@ -3,8 +3,8 @@
         "module": "commonjs"
     },
     "files": [
-      "src/script.ts",
-      "src/typings/interact.d.ts"
-
-    ]
+      "src/ts/app.ts",
+      "src/ts/typings/interact-patched.ts"
+  ],
+    "compileOnSave": false
 }

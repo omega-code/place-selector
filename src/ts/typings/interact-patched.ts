@@ -3,7 +3,6 @@
 // Definitions by: Gaspard Bucher <feature-space.com>
 // Definitions: https://github.com/DefinitelyTyped/DefinitelyTyped
 
-
   interface Position {
     x: number
     y: number
