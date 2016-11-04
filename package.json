@@ -9,11 +9,11 @@
     "author": "omega-code",
     "license": "ISC",
     "dependencies": {
-        "interact.js": "^1.2.6",
-        "ts-loader": "^0.9.5",
-        "typescript": "^2.0.6"
+        "interact.js": "^1.2.6"
     },
     "devDependencies": {
-        "webpack": "^1.13.3"
+        "webpack": "^1.13.3",
+        "ts-loader": "^0.9.5",
+        "typescript": "^2.0.6"
     }
 }
