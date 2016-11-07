@@ -26,34 +26,37 @@ class SeatSelector {
 
     constructor(canvas : HTMLCanvasElement, pixelSize : number, placeSize : number) {
         const self = this;
-        self.canv = canvas;
-        self.canv.width = document.body.clientWidth;
-        self.canv.height = window.innerHeight * 0.7;
-        self.ctx = canv.getContext('2d');
         self.pixelSize = pixelSize;
         self.placeSize = placeSize;
         self.places = {
             begin : {x : 0, y : 0},
             end : {x : 0, y : 0}
         }
-        interact(self.canv)
-            .draggable({
-                snap : {
-                    targets : [ interact.createSnapGrid({
-                        x : placeSize, y : placeSize
-                    }) ]
-                },
-                maxPerElement : Infinity
-            })
-            .on('dragstart', function (event : InteractEvent) {
-                self.dragStart(event);
-            })
-            .on('dragmove', function (event : InteractEvent) {
-                self.dragMove(event);
-            })
-            .on('doubletap', function () {
-                self.ctx.clearRect(0, 0, self.ctx.canvas.width, self.ctx.canvas.height);
-            });
+        self.canv = canvas;
+        try {
+            self.ctx = <CanvasRenderingContext2D> canv.getContext('2d');
+            if(self.ctx == null) throw Error;
+            interact(self.canv)
+                .draggable({
+                    snap : {
+                        targets : [ interact.createSnapGrid({
+                            x : placeSize, y : placeSize
+                        }) ]
+                    },
+                    maxPerElement : Infinity
+                })
+                .on('dragstart', function (event : InteractEvent) {
+                    self.dragStart(event);
+                })
+                .on('dragmove', function (event : InteractEvent) {
+                    self.dragMove(event);
+                })
+                .on('doubletap', function () {
+                    self.ctx.clearRect(0, 0, self.ctx.canvas.width, self.ctx.canvas.height);
+                });
+            } catch(error) {
+                console.log("Wrong context type");
+          }
     }
     private drawSquares() : void {
         this.ctx.fillRect(this.dragEndEvent.pageX - this.pixelSize / 2, this.dragEndEvent.pageY -
@@ -90,4 +93,4 @@ document.body.appendChild(canv);
 canv.width = document.body.clientWidth;
 canv.height = window.innerHeight * 0.7;
 
-const auditorium = new SeatSelector(canv, 10, 15);
+/*const auditorium = */ new SeatSelector(canv, 10, 15);
