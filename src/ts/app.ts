@@ -1,69 +1,93 @@
 import interact = require('interact.js');
 
-const pixelSize = 10, placeSize = pixelSize + 2;
-let placesCount = {
-    x : 0,
-    y : 0,
-    allPlaces : function() : number {
-        return this.x * this.y;
+interface Coords {
+    x : number;
+    y : number;
+}
+interface SelectedPlaces {
+    begin : Coords;
+    end : Coords;
+}
+class SeatSelector {
+    private pixelSize : number;
+    private placeSize : number;
+    private canv : HTMLCanvasElement;
+    private ctx : CanvasRenderingContext2D;
+    private places : SelectedPlaces;
+    private dragStartEvent : InteractEvent;
+    private dragEndEvent : InteractEvent;
+    private placesCount = {
+        x : 0,
+        y : 0,
+        allPlaces : function(this : any) : number {
+            return this.x * this.y;
+        }
+    };
+
+    constructor(canvas : HTMLCanvasElement, pixelSize : number, placeSize : number) {
+        const self = this;
+        self.canv = canvas;
+        self.canv.width = document.body.clientWidth;
+        self.canv.height = window.innerHeight * 0.7;
+        self.ctx = canv.getContext('2d');
+        self.pixelSize = pixelSize;
+        self.placeSize = placeSize;
+        self.places = {
+            begin : {x : 0, y : 0},
+            end : {x : 0, y : 0}
+        }
+        interact(self.canv)
+            .draggable({
+                snap : {
+                    targets : [ interact.createSnapGrid({
+                        x : placeSize, y : placeSize
+                    }) ]
+                },
+                maxPerElement : Infinity
+            })
+            .on('dragstart', function (event : InteractEvent) {
+                self.dragStart(event);
+            })
+            .on('dragmove', function (event : InteractEvent) {
+                self.dragMove(event);
+            })
+            .on('doubletap', function () {
+                self.ctx.clearRect(0, 0, self.ctx.canvas.width, self.ctx.canvas.height);
+            });
     }
-};
+    private drawSquares() : void {
+        this.ctx.fillRect(this.dragEndEvent.pageX - this.pixelSize / 2, this.dragEndEvent.pageY -
+            this.pixelSize / 2, this.pixelSize, this.pixelSize);
+    }
+    private dragStart(event : InteractEvent) : void {
+        this.dragStartEvent = event;
+        this.ctx.clearRect(0, 0, this.ctx.canvas.width, this.ctx.canvas.height);
+        this.ctx.fillRect(this.dragStartEvent.pageX - this.pixelSize / 2, this.dragStartEvent.pageY - this.pixelSize / 2, this.pixelSize, this.pixelSize);
+    }
+    private dragMove(event : InteractEvent) : void {
+        this.dragEndEvent = event;
 
-let places = {
-    begin :  {x : 0, y : 0},
-    end :  {x: 0, y : 0}
-};
+        this.placesCount.x = Math.abs( (this.dragStartEvent.pageX - this.dragEndEvent.pageX) / (this.placeSize) ) + 1;
+        this.placesCount.y = Math.abs( (this.dragStartEvent.pageY - this.dragEndEvent.pageY) / (this.placeSize) ) + 1;
 
+        this.places.begin.x = Math.min(this.dragStartEvent.pageX, this.dragEndEvent.pageX);
+        this.places.begin.y = Math.min(this.dragStartEvent.pageY, this.dragEndEvent.pageY);
+        this.places.end.x = Math.max(this.dragStartEvent.pageX, this.dragEndEvent.pageX);
+        this.places.end.y = Math.max(this.dragStartEvent.pageY, this.dragEndEvent.pageY);
 
-let dragStart : InteractEvent, dragEnd : InteractEvent;
+        this.log();
+
+        this.drawSquares();
+    }
+    private log() : void {
+        console.log(this.places.begin, this.places.end);
+        console.log('x:', this.placesCount.x, 'y:',  this.placesCount.y, 'all:', this.placesCount.allPlaces());
+    }
+}
 
 const canv = document.createElement("canvas");
-canv.setAttribute("id", "canvas");
+document.body.appendChild(canv);
 canv.width = document.body.clientWidth;
 canv.height = window.innerHeight * 0.7;
-document.body.appendChild(canv);
 
-const context = canv.getContext('2d');
-
-interact('#canvas')
-    .draggable({
-        snap: {
-            targets : [ interact.createSnapGrid({
-                x : placeSize, y: placeSize
-            }) ]
-        },
-        maxPerElement : Infinity
-    })
-    .on('dragstart', function (event : InteractEvent) {
-        dragStart = event;
-        context.fillRect(dragStart.pageX - pixelSize / 2, dragStart.pageY - pixelSize / 2, pixelSize, pixelSize);
-    })
-    .on('dragmove', function (event : InteractEvent) {
-        dragEnd = event;
-        placesCount.x = (dragStart.pageX - dragEnd.pageX) / (placeSize);
-        placesCount.y = (dragStart.pageY - dragEnd.pageY) / (placeSize);
-
-
-        console.log(dragStart.pageX, dragStart.pageY, dragEnd.pageX, dragEnd.pageY);
-
-
-        places.begin.x = Math.min(dragStart.pageX, dragEnd.pageX);
-        places.begin.y = Math.min(dragStart.pageY, dragEnd.pageY);
-        places.end.x = Math.max(dragStart.pageX, dragEnd.pageX);
-        places.end.y = Math.max(dragStart.pageY, dragEnd.pageY);
-
-        console.log(places.begin.x, places.begin.y, places.end.x, places.end.y);
-
-        drawSquares();
-    })
-    .on('doubletap', function (event : InteractEvent) {
-        context.clearRect(0, 0, context.canvas.width, context.canvas.height);
-    });
-
-function drawSquares() : void {
-    context.fillRect(dragEnd.pageX - pixelSize / 2, dragEnd.pageY - pixelSize / 2,
-                 pixelSize, pixelSize);
-}
-function exec() : void {
-
-}
+const auditorium = new SeatSelector(canv, 10, 15);
