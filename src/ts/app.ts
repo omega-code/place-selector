@@ -12,6 +12,7 @@ class SeatSelector {
     private pixelSize : number;
     private placeSize : number;
     private canv : HTMLCanvasElement;
+    private canvPosition : Coords;
     private ctx : CanvasRenderingContext2D;
     private places : SelectedPlaces;
     private dragStartEvent : InteractEvent;
@@ -33,6 +34,12 @@ class SeatSelector {
             end : {x : 0, y : 0}
         }
         self.canv = canvas;
+        self.canvPosition = {
+            x : 0,
+            y : 0
+        };
+        self.canvPosition.x = canvas.getBoundingClientRect().top;
+        self.canvPosition.y = canvas.getBoundingClientRect().left;
         try {
             self.ctx = <CanvasRenderingContext2D> canv.getContext('2d');
             if(self.ctx == null) throw Error;
@@ -59,13 +66,14 @@ class SeatSelector {
           }
     }
     private drawSquares() : void {
-        this.ctx.fillRect(this.dragEndEvent.pageX - this.pixelSize / 2, this.dragEndEvent.pageY -
-            this.pixelSize / 2, this.pixelSize, this.pixelSize);
+        this.ctx.clearRect(0, 0, this.ctx.canvas.width, this.ctx.canvas.height);
+        for(let i = this.places.begin.x; i <= this.places.end.x; i += this.placeSize)
+            for(let j = this.places.begin.y; j <= this.places.end.y; j += this.placeSize) {
+                this.ctx.fillRect(i, j, this.pixelSize, this.pixelSize);
+            }
     }
     private dragStart(event : InteractEvent) : void {
         this.dragStartEvent = event;
-        this.ctx.clearRect(0, 0, this.ctx.canvas.width, this.ctx.canvas.height);
-        this.ctx.fillRect(this.dragStartEvent.pageX - this.pixelSize / 2, this.dragStartEvent.pageY - this.pixelSize / 2, this.pixelSize, this.pixelSize);
     }
     private dragMove(event : InteractEvent) : void {
         this.dragEndEvent = event;
@@ -73,10 +81,10 @@ class SeatSelector {
         this.placesCount.x = Math.abs( (this.dragStartEvent.pageX - this.dragEndEvent.pageX) / (this.placeSize) ) + 1;
         this.placesCount.y = Math.abs( (this.dragStartEvent.pageY - this.dragEndEvent.pageY) / (this.placeSize) ) + 1;
 
-        this.places.begin.x = Math.min(this.dragStartEvent.pageX, this.dragEndEvent.pageX);
-        this.places.begin.y = Math.min(this.dragStartEvent.pageY, this.dragEndEvent.pageY);
-        this.places.end.x = Math.max(this.dragStartEvent.pageX, this.dragEndEvent.pageX);
-        this.places.end.y = Math.max(this.dragStartEvent.pageY, this.dragEndEvent.pageY);
+        this.places.begin.x = Math.min(this.dragStartEvent.pageX, this.dragEndEvent.pageX) - this.canvPosition.x;
+        this.places.begin.y = Math.min(this.dragStartEvent.pageY, this.dragEndEvent.pageY) - this.canvPosition.y;
+        this.places.end.x = Math.max(this.dragStartEvent.pageX, this.dragEndEvent.pageX) - this.canvPosition.x;
+        this.places.end.y = Math.max(this.dragStartEvent.pageY, this.dragEndEvent.pageY) - this.canvPosition.y;
 
         this.log();
 
@@ -93,4 +101,4 @@ document.body.appendChild(canv);
 canv.width = document.body.clientWidth;
 canv.height = window.innerHeight * 0.7;
 
-/*const auditorium = */ new SeatSelector(canv, 10, 15);
+/*const auditorium = */ new SeatSelector(canv, 15, 20);
