@@ -1,0 +1,19 @@
+{
+    "compilerOptions": {
+        "module": "commonjs",
+        "removeComments": true,
+        "strictNullChecks": true,
+        "noImplicitReturns": true,
+        "noImplicitThis": true,
+        "noImplicitAny": true,
+        "noUnusedParameters": true,
+        "noUnusedLocals": true,
+        "forceConsistentCasingInFileNames": true,
+        "target" : "ES5"
+    },
+    "files": [
+      "src/ts/app.ts",
+      "src/ts/typings/interact-patched.d.ts"
+  ],
+    "compileOnSave": false
+}
