@@ -51,6 +51,7 @@ class SeatSelector {
     private canv : HTMLCanvasElement;
     private canvPosition : Coords;
     private ctx : CanvasRenderingContext2D;
+    //Seatings array
     private seats : Rect[];
     private places : SelectedPlaces;
     private dragStartEvent : InteractEvent;
@@ -63,8 +64,18 @@ class SeatSelector {
         }
     };
 
+    private mode : number;
+
     constructor(canvas : HTMLCanvasElement, pixelSize : number, placeSize : number) {
         const self = this;
+        self.mode = 1;
+        //Temporary mode selector
+        document.addEventListener("keypress", function(event) {
+          self.mode = event.which - 48;
+          self.drawSquares();
+          self.drawInfo();
+        });
+
         self.pixelSize = pixelSize;
         self.placeSize = placeSize;
         self.places = {
@@ -94,13 +105,27 @@ class SeatSelector {
                     maxPerElement : Infinity
                 })
                 .on('dragstart', function (event : InteractEvent) {
-                    self.dragStart(event);
+                    if(self.mode == 1)
+                        self.dragStart(event);
                 })
                 .on('dragmove', function (event : InteractEvent) {
-                    self.dragMove(event);
+                    if(self.mode == 1)
+                        self.dragMove(event)
                 })
                 .on('doubletap', function () {
+                    self.seats = [];
                     self.ctx.clearRect(0, 0, self.ctx.canvas.width, self.ctx.canvas.height);
+                })
+                .on('tap', function (event : InteractEvent) {
+                    if(self.mode == 2){
+                        const mouseX = event.clientX - self.canvPosition.x;
+                        const mouseY = event.clientY - self.canvPosition.y;
+                        for (let i = 0; i < self.seats.length; i++) {
+                            if (self.seats[i].isPointInside(mouseX, mouseY)) {
+                                self.seats[i].setColor('yellow');
+                            }
+                        }
+                    }
                 });
             } catch(error) {
                 console.log("Wrong context type");
@@ -115,6 +140,22 @@ class SeatSelector {
                 this.seats.push(new Rect(id++, i, j, this.pixelSize, this.pixelSize, 'green', this.ctx));
             }
     }
+    private drawInfo() : void {
+        let mode = '';
+        switch (this.mode) {
+            case 1 :
+                mode = "Draw";
+                break;
+            case 2 :
+                mode = "Select";
+                break;
+        }
+        this.ctx.fillStyle = "#00F";
+        this.ctx.font = "italic 30pt Arial";
+        this.ctx.fillText("Mode: " + mode, 20 + this.canvPosition.x, 30 + this.canvPosition.y);
+
+}
+
     private dragStart(event : InteractEvent) : void {
         this.dragStartEvent = event;
     }
@@ -130,7 +171,7 @@ class SeatSelector {
         this.places.end.y = Math.max(this.dragStartEvent.pageY, this.dragEndEvent.pageY) - this.canvPosition.y;
 
         this.drawSquares();
-
+        this.drawInfo();
         this.log();
     }
     private log() : void {
