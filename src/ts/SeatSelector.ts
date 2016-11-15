@@ -1,4 +1,6 @@
 import interact = require('interact.js');
+
+import { Area, Coords } from './Area';
 import { Rect } from './Rect';
 
 export class SeatSelector {
@@ -10,8 +12,8 @@ export class SeatSelector {
     //Seatings array
     private seats: Rect[];
     private selectedArea: Area;
-    private dragStartEvent: InteractEvent;
-    private dragEndEvent: InteractEvent;
+    private dragStartCoords: Coords;
+    private dragEndCoords: Coords;
     private placesCount = {
         x: 0,
         y: 0,
@@ -32,15 +34,14 @@ export class SeatSelector {
         self.pixelSize = pixelSize;
         self.placeSize = placeSize;
         self.selectedArea = {
-            begin: {x: 0, y: 0},
-            end: {x: 0, y: 0}
+            begin: new Coords,
+            end: new Coords
         }
+        self.dragStartCoords = new Coords;
+        self.dragEndCoords = new Coords;
         self.seats = [];
         self.canv = canvas;
-        self.canvOffset = {
-            x: 0,
-            y: 0
-        };
+        self.canvOffset = new Coords;
         self.grid = interact.createSnapGrid({
             x: self.placeSize, y: self.placeSize
         });
@@ -70,10 +71,9 @@ export class SeatSelector {
                   snap: false
               });
           }
-          self.selectedArea = {
-              begin: {x: 0, y: 0},
-              end: {x: 0, y: 0}
-          }
+          self.selectedArea.begin.reset();
+          self.selectedArea.end.reset();
+
           self.clearCanvas();
           self.renderSeats();
           self.renderInfo();
@@ -106,7 +106,7 @@ export class SeatSelector {
                     const mouseX = event.clientX - self.canvOffset.x;
                     const mouseY = event.clientY - self.canvOffset.y;
                     for (let i = 0; i < self.seats.length; i++) {
-                        if (self.seats[i].isPointInside({x: mouseX, y: mouseY})) {
+                        if (self.seats[i].isPointInside(new Coords(mouseX, mouseY))) {
                             self.seats[i].setColor('#66ff99');
                         }
                     }
@@ -156,19 +156,24 @@ export class SeatSelector {
         this.ctx.clearRect(0, 0, this.ctx.canvas.width, this.ctx.canvas.height);
     }
     private dragStart(event: InteractEvent): void {
-        this.dragStartEvent = event;
+        this.dragStartCoords.x = event.pageX;
+        this.dragStartCoords.y = event.pageY;
     }
     private dragMove(event: InteractEvent): void {
-        this.dragEndEvent = event;
+        this.dragEndCoords.x = event.pageX;
+        this.dragEndCoords.y = event.pageY;
 
-        this.selectedArea.begin.x = Math.min(this.dragStartEvent.pageX, this.dragEndEvent.pageX) - this.canvOffset.x;
-        this.selectedArea.begin.y = Math.min(this.dragStartEvent.pageY, this.dragEndEvent.pageY) - this.canvOffset.y;
-        this.selectedArea.end.x = Math.max(this.dragStartEvent.pageX, this.dragEndEvent.pageX) - this.canvOffset.x;
-        this.selectedArea.end.y = Math.max(this.dragStartEvent.pageY, this.dragEndEvent.pageY) - this.canvOffset.y;
+
+
+
+        this.selectedArea.begin.x = Math.min(this.dragStartCoords.x, this.dragEndCoords.x) - this.canvOffset.x;
+        this.selectedArea.begin.y = Math.min(this.dragStartCoords.y, this.dragEndCoords.y) - this.canvOffset.y;
+        this.selectedArea.end.x = Math.max(this.dragStartCoords.x, this.dragEndCoords.x) - this.canvOffset.x;
+        this.selectedArea.end.y = Math.max(this.dragStartCoords.y, this.dragEndCoords.y) - this.canvOffset.y;
 
         if(this.mode == 1) {
-            this.placesCount.x = Math.abs( (this.dragStartEvent.pageX - this.dragEndEvent.pageX) / (this.placeSize) );
-            this.placesCount.y = Math.abs( (this.dragStartEvent.pageY - this.dragEndEvent.pageY) / (this.placeSize) );
+            this.placesCount.x = Math.abs( (this.dragStartCoords.x - this.dragEndCoords.x) / (this.placeSize) );
+            this.placesCount.y = Math.abs( (this.dragStartCoords.y - this.dragEndCoords.y) / (this.placeSize) );
 
             this.createSeats();
         } else if(this.mode == 2) {
@@ -196,4 +201,5 @@ export class SeatSelector {
         console.log('x:', this.placesCount.x, 'y:',  this.placesCount.y, 'all:', this.placesCount.allPlaces());
         console.log(this.seats);
     }
+
 }
