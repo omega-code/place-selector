@@ -12,7 +12,7 @@
         "target" : "ES5"
     },
     "files": [
-      "src/ts/Area.ts",
+      "src/ts/Coords.ts",
       "src/ts/Rect.ts",
       "src/ts/SeatSelector.ts",
       "src/ts/app.ts",

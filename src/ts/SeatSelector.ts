@@ -1,6 +1,6 @@
 import interact = require('interact.js');
 
-import { Area, Coords } from './Area';
+import { Area, Coords } from './Coords';
 import { Rect } from './Rect';
 
 export class SeatSelector {
@@ -14,22 +14,12 @@ export class SeatSelector {
     private selectedArea: Area;
     private dragStartCoords: Coords;
     private dragEndCoords: Coords;
-    private placesCount = {
-        x: 0,
-        y: 0,
-        allPlaces: function(this: any): number {
-            return this.x * this.y;
-        }
-    };
     private grid: SnapFunction;
 
-    private mode: number;
+    private mode: string;
 
     constructor(canvas: HTMLCanvasElement, pixelSize: number, placeSize: number) {
         const self = this;
-        self.mode = 1;
-        //Temporary mode selector
-        this.initMode();
 
         self.pixelSize = pixelSize;
         self.placeSize = placeSize;
@@ -41,12 +31,13 @@ export class SeatSelector {
         self.dragEndCoords = new Coords;
         self.seats = [];
         self.canv = canvas;
-        self.canvOffset = new Coords;
+        self.canvOffset = new Coords(
+            canvas.getBoundingClientRect().top,
+            canvas.getBoundingClientRect().left
+        );
         self.grid = interact.createSnapGrid({
             x: self.placeSize, y: self.placeSize
         });
-        self.canvOffset.x = canvas.getBoundingClientRect().top;
-        self.canvOffset.y = canvas.getBoundingClientRect().left;
         try {
             self.ctx = <CanvasRenderingContext2D> this.canv.getContext('2d');
             if(self.ctx == null) throw Error;
@@ -54,19 +45,29 @@ export class SeatSelector {
         } catch(error) {
             console.log("Wrong context type");
         }
+        self.mode = 'draw';
+        this.initMode();
     }
     private initMode() {
         const self = this;
         document.addEventListener("keypress", function(event : KeyboardEvent) {
-          self.mode = event.which - 48;
-          if(self.mode == 1) {
+            let key = event.which - 48;
+            switch (key) {
+                case 1:
+                    self.mode = "draw";
+                    break;
+                case 2:
+                    self.mode = "select";
+                    break;
+            }
+          if(self.mode == 'draw') {
                 interact(self.canv).draggable({
                 snap: {
                     targets: [ self.grid ]
                 },
             });
           }
-          else if(self.mode == 2) {
+          else if(self.mode == 'select') {
               interact(self.canv).draggable({
                   snap: false
               });
@@ -102,11 +103,13 @@ export class SeatSelector {
                 self.clearCanvas();
             })
             .on('tap', function (event: InteractEvent) {
-                if(self.mode == 2) {
-                    const mouseX = event.clientX - self.canvOffset.x;
-                    const mouseY = event.clientY - self.canvOffset.y;
+                if(self.mode == 'select') {
+                    const mouseClick = new Coords (
+                        event.clientX - self.canvOffset.x,
+                        event.clientY - self.canvOffset.y
+                    );
                     for (let i = 0; i < self.seats.length; i++) {
-                        if (self.seats[i].isPointInside(new Coords(mouseX, mouseY))) {
+                        if (self.seats[i].isPointInside(mouseClick)) {
                             self.seats[i].setColor('#66ff99');
                         }
                     }
@@ -127,18 +130,9 @@ export class SeatSelector {
         this.renderSeats();
     }
     public renderInfo(): void {
-        let mode = '';
-        switch (this.mode) {
-            case 1:
-                mode = "Draw";
-                break;
-            case 2:
-                mode = "Select";
-                break;
-        }
         this.ctx.fillStyle = "#00F";
-        this.ctx.font = "italic 30pt Arial";
-        this.ctx.fillText("Mode: " + mode, 20 + this.canvOffset.x, 30 + this.canvOffset.y);
+        this.ctx.font = "italic 35pt Arial";
+        this.ctx.fillText("MODE: " + this.mode, 20 + this.canvOffset.x, 30 + this.canvOffset.y);
     }
     private selectionFrameRender() {
         this.ctx.beginPath();
@@ -163,29 +157,13 @@ export class SeatSelector {
         this.dragEndCoords.x = event.pageX;
         this.dragEndCoords.y = event.pageY;
 
+        this.calculateSelectedArea();
 
-
-
-        this.selectedArea.begin.x = Math.min(this.dragStartCoords.x, this.dragEndCoords.x) - this.canvOffset.x;
-        this.selectedArea.begin.y = Math.min(this.dragStartCoords.y, this.dragEndCoords.y) - this.canvOffset.y;
-        this.selectedArea.end.x = Math.max(this.dragStartCoords.x, this.dragEndCoords.x) - this.canvOffset.x;
-        this.selectedArea.end.y = Math.max(this.dragStartCoords.y, this.dragEndCoords.y) - this.canvOffset.y;
-
-        if(this.mode == 1) {
-            this.placesCount.x = Math.abs( (this.dragStartCoords.x - this.dragEndCoords.x) / (this.placeSize) );
-            this.placesCount.y = Math.abs( (this.dragStartCoords.y - this.dragEndCoords.y) / (this.placeSize) );
-
+        if(this.mode == 'draw') {
             this.createSeats();
-        } else if(this.mode == 2) {
+        } else if(this.mode == 'select') {
             this.clearCanvas();
-
-            for(let seat of this.seats)
-                if(seat.isInsideArea(this.selectedArea) == true) {
-                    console.log ( 'Selected seats:' + seat.id );
-                    seat.setColor('#66ff99');
-                } else {
-                    seat.setColor('green');
-                }
+            this.checkSelectedSeats();
             this.selectionFrameRender();
         }
         this.renderInfo();
@@ -196,9 +174,33 @@ export class SeatSelector {
         this.renderSeats();
         this.renderInfo();
     }
+    private calculateSelectedArea(): void {
+        this.selectedArea.begin = this.findLeftTopCoord(this.dragStartCoords, this.dragEndCoords);
+        this.selectedArea.end = this.findRightBottomCoord(this.dragStartCoords, this.dragEndCoords);
+    }
+    private findLeftTopCoord(point1: Coords, point2: Coords): Coords {
+        let leftTop = new Coords;
+        leftTop.x = Math.min(point1.x, point2.x) - this.canvOffset.x;
+        leftTop.y = Math.min(point1.y, point2.y) - this.canvOffset.x;
+        return leftTop;
+    }
+    private findRightBottomCoord(point1: Coords, point2: Coords): Coords {
+        let rightBottom = new Coords;
+        rightBottom.x = Math.max(point1.x, point2.x) - this.canvOffset.x;
+        rightBottom.y = Math.max(point1.y, point2.y) - this.canvOffset.x;
+        return rightBottom;
+    }
+    private checkSelectedSeats() {
+        for(let seat of this.seats)
+            if(seat.isInsideArea(this.selectedArea) == true) {
+                console.log ( 'Selected seats:' + seat.id );
+                seat.setColor('#66ff99');
+            } else {
+                seat.setColor('green');
+            }
+    }
     private log(): void {
         console.log(this.selectedArea.begin, this.selectedArea.end);
-        console.log('x:', this.placesCount.x, 'y:',  this.placesCount.y, 'all:', this.placesCount.allPlaces());
         console.log(this.seats);
     }
 
