@@ -1,7 +1,15 @@
 import { Area, Coords } from './Coords';
 
 export class Rect {
-    constructor(readonly id: number, private x: number, private y: number, private width: number, private height: number, private fill: string, private ctx: CanvasRenderingContext2D) {}
+    constructor
+        ( readonly id: number
+        , private x: number
+        , private y: number
+        , private width: number
+        , private height: number
+        , private fill: string
+        , private ctx: CanvasRenderingContext2D
+    ) {}
 
     draw(): void {
         this.ctx.fillStyle = this.fill;
@@ -12,7 +20,9 @@ export class Rect {
         return this.leftTop.isBeforeOrEqual(point) && this.rightBottom.isAfterOrEqual(point);
     }
     isInsideArea(area: Area): boolean {
-        return( this.leftTop.isAfterOrEqual(area.begin) && this.rightBottom.isBeforeOrEqual(area.end) );
+        return(
+            this.leftTop.isAfterOrEqual(area.begin) && this.rightBottom.isBeforeOrEqual(area.end)
+        );
     }
     setColor(fill: string): void {
         this.fill = fill;
