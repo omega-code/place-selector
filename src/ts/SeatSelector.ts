@@ -45,7 +45,7 @@ export class SeatSelector {
         });
 
         self.ctx = <CanvasRenderingContext2D> this.canv.getContext('2d');
-        if(self.ctx == null) throw Error;
+        if (self.ctx == null) throw Error;
         this.initInteract();
         self.mode = Mode.draw;
         this.initMode();
@@ -53,17 +53,23 @@ export class SeatSelector {
     private initMode() {
         const self = this;
         const keyBoardKeyOne = 48;
+        const keyBoardEsc = 27;
         document.addEventListener("keypress", function(event : KeyboardEvent) {
-            let key = event.which - keyBoardKeyOne;
+            if (event.keyCode == keyBoardEsc) {
+                self.seats = [];
+                self.clearCanvas();
+                return;
+            }
+            const key = event.which - keyBoardKeyOne;
             self.mode = key;
-          if(self.mode == Mode.draw) {
+          if (self.mode == Mode.draw) {
                 interact(self.canv).draggable({
                 snap: {
                     targets: [ self.grid ]
                 },
             });
           }
-          else if(self.mode == Mode.select) {
+          else if (self.mode == Mode.select) {
               interact(self.canv).draggable({
                   snap: false
               });
@@ -94,12 +100,8 @@ export class SeatSelector {
             .on('dragend', function () {
                 self.dragEnd();
             })
-            .on('doubletap', function () {
-                self.seats = [];
-                self.clearCanvas();
-            })
             .on('tap', function (event: InteractEvent) {
-                if(self.mode == Mode.select) {
+                if (self.mode == Mode.select) {
                     const mouseClick = new Coords (
                         event.clientX - self.canvOffset.x,
                         event.clientY - self.canvOffset.y
@@ -113,14 +115,14 @@ export class SeatSelector {
             });
     }
     private renderSeats(): void {
-        for(let seat of this.seats)
+        for (let seat of this.seats)
             seat.draw();
     }
     private createSeats(): void {
         this.clearCanvas();
         this.seats = [];
-        for(let i = this.selectedArea.begin.x, id = 1; i < this.selectedArea.end.x; i += this.placeSize)
-            for(let j = this.selectedArea.begin.y; j < this.selectedArea.end.y; j += this.placeSize) {
+        for (let i = this.selectedArea.begin.x, id = 1; i < this.selectedArea.end.x; i += this.placeSize)
+            for (let j = this.selectedArea.begin.y; j < this.selectedArea.end.y; j += this.placeSize) {
                 this.seats.push(new Rect(id++, i, j, this.pixelSize, this.pixelSize, 'green', this.ctx));
             }
         this.renderSeats();
@@ -164,9 +166,9 @@ export class SeatSelector {
 
         this.calculateSelectedArea();
 
-        if(this.mode == Mode.draw) {
+        if (this.mode == Mode.draw) {
             this.createSeats();
-        } else if(this.mode == Mode.select) {
+        } else if (this.mode == Mode.select) {
             this.clearCanvas();
             this.checkSelectedSeats();
             this.selectionFrameRender();
@@ -198,17 +200,18 @@ export class SeatSelector {
         return rightBottom;
     }
     private checkSelectedSeats() {
-        for(let seat of this.seats)
-            if(seat.isInsideArea(this.selectedArea) == true) {
+        for (let seat of this.seats)
+            if (seat.isInsideArea(this.selectedArea) == true) {
                 console.log ( 'Selected seats:' + seat.id );
                 seat.setColor('#66ff99');
             } else {
                 seat.setColor('green');
             }
     }
-    private log(): void {
+    private log(info?: any): void {
         console.log(this.selectedArea.begin, this.selectedArea.end);
         console.log(this.seats);
+        if (info != undefined) console.log(info);
     }
 
 }
