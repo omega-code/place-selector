@@ -3,10 +3,9 @@ import interact = require('interact.js');
 import { Area, Coords } from './Coords';
 import { Rect } from './Rect';
 
-const KEYBOARD1CODE = 48;
-const MODES = {
-    draw: 'draw',
-    select: 'select'
+const enum modes {
+    draw = 1,
+    select
 };
 
 export class SeatSelector {
@@ -22,7 +21,7 @@ export class SeatSelector {
     private dragEndCoords: Coords;
     private grid: SnapFunction;
 
-    private mode: string;
+    private mode: modes;
 
     constructor(canvas: HTMLCanvasElement, pixelSize: number, placeSize: number) {
         const self = this;
@@ -48,29 +47,23 @@ export class SeatSelector {
         self.ctx = <CanvasRenderingContext2D> this.canv.getContext('2d');
         if(self.ctx == null) throw Error;
         this.initInteract();
-        self.mode = MODES.draw;
+        self.mode = modes.draw;
         this.initMode();
     }
     private initMode() {
         const self = this;
+        const keyBoardKeyOne = 48;
         document.addEventListener("keypress", function(event : KeyboardEvent) {
-            let key = event.which - KEYBOARD1CODE;
-            switch (key) {
-                case 1:
-                    self.mode = MODES.draw;
-                    break;
-                case 2:
-                    self.mode = MODES.select;
-                    break;
-            }
-          if(self.mode == MODES.draw) {
+            let key = event.which - keyBoardKeyOne;
+            self.mode = key;
+          if(self.mode == modes.draw) {
                 interact(self.canv).draggable({
                 snap: {
                     targets: [ self.grid ]
                 },
             });
           }
-          else if(self.mode == MODES.select) {
+          else if(self.mode == modes.select) {
               interact(self.canv).draggable({
                   snap: false
               });
@@ -106,7 +99,7 @@ export class SeatSelector {
                 self.clearCanvas();
             })
             .on('tap', function (event: InteractEvent) {
-                if(self.mode == MODES.select) {
+                if(self.mode == modes.select) {
                     const mouseClick = new Coords (
                         event.clientX - self.canvOffset.x,
                         event.clientY - self.canvOffset.y
@@ -133,9 +126,20 @@ export class SeatSelector {
         this.renderSeats();
     }
     public renderInfo(): void {
+        let modeName: string;
+        switch (this.mode) {
+            case 1:
+                modeName = 'draw';
+                break;
+            case 2:
+                modeName = 'select';
+                break;
+            default:
+                modeName = '';
+        }
         this.ctx.fillStyle = "#00F";
         this.ctx.font = "italic 35pt Arial";
-        this.ctx.fillText("MODE: " + this.mode, 20 + this.canvOffset.x, 30 + this.canvOffset.y);
+        this.ctx.fillText("MODE: " + modeName, 20 + this.canvOffset.x, 30 + this.canvOffset.y);
     }
     private selectionFrameRender() {
         this.ctx.beginPath();
@@ -160,9 +164,9 @@ export class SeatSelector {
 
         this.calculateSelectedArea();
 
-        if(this.mode == MODES.draw) {
+        if(this.mode == modes.draw) {
             this.createSeats();
-        } else if(this.mode == MODES.select) {
+        } else if(this.mode == modes.select) {
             this.clearCanvas();
             this.checkSelectedSeats();
             this.selectionFrameRender();
