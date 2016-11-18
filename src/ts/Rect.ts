@@ -2,19 +2,16 @@ import { Area, Coords } from './Coords';
 
 export class Rect {
     constructor
-        ( readonly id: number
-        , private x: number
+        ( private x: number
         , private y: number
         , private width: number
         , private height: number
         , readonly defaultColor: string
         , readonly selectionColor: string
-        , private selected: boolean
         , private ctx: CanvasRenderingContext2D
     ) {}
-
-    draw(): void {
-        this.ctx.fillStyle = this.selected ? this.selectionColor : this.defaultColor ;
+    draw(selected: boolean): void {
+        this.ctx.fillStyle = selected ? this.selectionColor : this.defaultColor ;
         this.ctx.fillRect(this.x, this.y, this.width, this.height);
         this.ctx.restore();
     }
@@ -25,12 +22,6 @@ export class Rect {
         return(
             this.leftTop.isAfterOrEqual(area.begin) && this.rightBottom.isBeforeOrEqual(area.end)
         );
-    }
-    toggleSelect(): void {
-        this.selected = this.selected ?  false : true;
-    }
-    isSelected() {
-        return this.selected;
     }
     get leftTop(): Coords {
         return new Coords(this.x, this.y);

@@ -1,7 +1,7 @@
 import interact = require('interact.js');
 
 import { Area, Coords } from './Coords';
-import { Rect } from './Rect';
+import { Seat } from './Seat';
 
 const enum Mode {
     draw = 1,
@@ -15,7 +15,7 @@ export class SeatSelector {
     private canvOffset: Coords;
     private ctx: CanvasRenderingContext2D;
     //Seatings array
-    private seats: Rect[];
+    private seats: Seat[];
     private selectedArea: Area;
     private dragStartCoords: Coords;
     private dragEndCoords: Coords;
@@ -115,7 +115,7 @@ export class SeatSelector {
                         event.clientY - self.canvOffset.y
                     );
                     for (let seat of self.seats) {
-                        if (seat.isPointInside(mouseClick)) {
+                        if (seat.rect.isPointInside(mouseClick)) {
                             seat.toggleSelect();
                             self.renderSeats();
                         }
@@ -132,7 +132,7 @@ export class SeatSelector {
         this.seats = [];
         for (let i = this.selectedArea.begin.x, id = 1; i < this.selectedArea.end.x; i += this.placeSize)
             for (let j = this.selectedArea.begin.y; j < this.selectedArea.end.y; j += this.placeSize) {
-                this.seats.push(new Rect(id++, i, j, this.pixelSize, this.pixelSize, 'green', '#66ff99', false, this.ctx));
+                this.seats.push(new Seat(id++, i, j, this.pixelSize, this.ctx));
             }
         this.renderSeats();
     }
@@ -211,7 +211,7 @@ export class SeatSelector {
     }
     private checkSelectedSeats() {
         for (let seat of this.seats)
-            if (seat.isInsideArea(this.selectedArea) == true)
+            if (seat.rect.isInsideArea(this.selectedArea) == true)
                 seat.toggleSelect()
     }
     private deleteSelected() {
