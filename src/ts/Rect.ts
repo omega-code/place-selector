@@ -7,12 +7,14 @@ export class Rect {
         , private y: number
         , private width: number
         , private height: number
-        , private fill: string
+        , readonly defaultColor: string
+        , readonly selectionColor: string
+        , private selected: boolean
         , private ctx: CanvasRenderingContext2D
     ) {}
 
     draw(): void {
-        this.ctx.fillStyle = this.fill;
+        this.ctx.fillStyle = this.selected ? this.selectionColor : this.defaultColor ;
         this.ctx.fillRect(this.x, this.y, this.width, this.height);
         this.ctx.restore();
     }
@@ -24,10 +26,10 @@ export class Rect {
             this.leftTop.isAfterOrEqual(area.begin) && this.rightBottom.isBeforeOrEqual(area.end)
         );
     }
-    setColor(fill: string): void {
-        this.fill = fill;
-        this.draw();
+    toggleSelect(): void {
+        this.selected = this.selected ?  false : true;
     }
+
     get leftTop(): Coords {
         return new Coords(this.x, this.y);
     }
