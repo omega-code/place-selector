@@ -29,7 +29,9 @@ export class Rect {
     toggleSelect(): void {
         this.selected = this.selected ?  false : true;
     }
-
+    isSelected() {
+        return this.selected;
+    }
     get leftTop(): Coords {
         return new Coords(this.x, this.y);
     }

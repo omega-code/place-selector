@@ -54,10 +54,18 @@ export class SeatSelector {
         const self = this;
         const keyBoardKeyOne = 48;
         const keyBoardEsc = 27;
+        const keyBoardDel = 46
         document.addEventListener("keypress", function(event : KeyboardEvent) {
             if (event.keyCode == keyBoardEsc) {
                 self.seats = [];
                 self.clearCanvas();
+                return;
+            }
+            if (event.keyCode == keyBoardDel) {
+                self.deleteSelected();
+                self.clearCanvas();
+                self.renderSeats();
+                self.renderInfo();
                 return;
             }
             const key = event.which - keyBoardKeyOne;
@@ -106,9 +114,9 @@ export class SeatSelector {
                         event.clientX - self.canvOffset.x,
                         event.clientY - self.canvOffset.y
                     );
-                    for (let i = 0; i < self.seats.length; i++) {
-                        if (self.seats[i].isPointInside(mouseClick)) {
-                            self.seats[i].toggleSelect();
+                    for (let seat of self.seats) {
+                        if (seat.isPointInside(mouseClick)) {
+                            seat.toggleSelect();
                             self.renderSeats();
                         }
                     }
@@ -206,9 +214,20 @@ export class SeatSelector {
             if (seat.isInsideArea(this.selectedArea) == true)
                 seat.toggleSelect()
     }
+    private deleteSelected() {
+        let oldSeats = this.seats
+        this.seats = [];
+        for (let seat of oldSeats) {
+            if (!seat.isSelected())
+                this.seats.push(seat);
+        }
+        oldSeats = [];
+    }
     private log(info?: any): void {
+        /*
         console.log(this.selectedArea.begin, this.selectedArea.end);
         console.log(this.seats);
+        */
         if (info != undefined) console.log(info);
     }
 
