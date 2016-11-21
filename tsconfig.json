@@ -14,6 +14,7 @@
     "files": [
       "src/ts/Coords.ts",
       "src/ts/Rect.ts",
+      "src/ts/Seat.ts",
       "src/ts/SeatSelector.ts",
       "src/ts/app.ts",
       "src/ts/typings/interact-patched.d.ts"

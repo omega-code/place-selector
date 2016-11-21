@@ -1,7 +1,7 @@
 import interact = require('interact.js');
 
 import { Area, Coords } from './Coords';
-import { Rect } from './Rect';
+import { Seat } from './Seat';
 
 const enum Mode {
     draw = 1,
@@ -15,7 +15,7 @@ export class SeatSelector {
     private canvOffset: Coords;
     private ctx: CanvasRenderingContext2D;
     //Seatings array
-    private seats: Rect[];
+    private seats: Seat[];
     private selectedArea: Area;
     private dragStartCoords: Coords;
     private dragEndCoords: Coords;
@@ -37,8 +37,8 @@ export class SeatSelector {
         self.seats = [];
         self.canv = canvas;
         self.canvOffset = new Coords(
-            canvas.getBoundingClientRect().top,
-            canvas.getBoundingClientRect().left
+            canvas.getBoundingClientRect().left,
+            canvas.getBoundingClientRect().top
         );
         self.grid = interact.createSnapGrid({
             x: self.placeSize, y: self.placeSize
@@ -54,10 +54,18 @@ export class SeatSelector {
         const self = this;
         const keyBoardKeyOne = 48;
         const keyBoardEsc = 27;
+        const keyBoardDel = 46
         document.addEventListener("keypress", function(event : KeyboardEvent) {
             if (event.keyCode == keyBoardEsc) {
                 self.seats = [];
                 self.clearCanvas();
+                return;
+            }
+            if (event.keyCode == keyBoardDel) {
+                self.deleteSelected();
+                self.clearCanvas();
+                self.renderSeats();
+                self.renderInfo();
                 return;
             }
             const key = event.which - keyBoardKeyOne;
@@ -106,9 +114,10 @@ export class SeatSelector {
                         event.clientX - self.canvOffset.x,
                         event.clientY - self.canvOffset.y
                     );
-                    for (let i = 0; i < self.seats.length; i++) {
-                        if (self.seats[i].isPointInside(mouseClick)) {
-                            self.seats[i].setColor('#66ff99');
+                    for (let seat of self.seats) {
+                        if (seat.rect.isPointInside(mouseClick)) {
+                            seat.toggleSelect();
+                            self.renderSeats();
                         }
                     }
                 }
@@ -123,7 +132,7 @@ export class SeatSelector {
         this.seats = [];
         for (let i = this.selectedArea.begin.x, id = 1; i < this.selectedArea.end.x; i += this.placeSize)
             for (let j = this.selectedArea.begin.y; j < this.selectedArea.end.y; j += this.placeSize) {
-                this.seats.push(new Rect(id++, i, j, this.pixelSize, this.pixelSize, 'green', this.ctx));
+                this.seats.push(new Seat(id++, i, j, this.pixelSize, this.ctx));
             }
         this.renderSeats();
     }
@@ -142,6 +151,7 @@ export class SeatSelector {
         this.ctx.fillStyle = "#00F";
         this.ctx.font = "italic 35pt Arial";
         this.ctx.fillText("MODE: " + modeName, 20 + this.canvOffset.x, 30 + this.canvOffset.y);
+        this.log();
     }
     private selectionFrameRender() {
         this.ctx.beginPath();
@@ -170,13 +180,13 @@ export class SeatSelector {
             this.createSeats();
         } else if (this.mode == Mode.select) {
             this.clearCanvas();
-            this.checkSelectedSeats();
+            this.renderSeats();
             this.selectionFrameRender();
         }
         this.renderInfo();
-        this.log();
     }
     private dragEnd(): void {
+        if (this.mode == Mode.select) this.checkSelectedSeats();
         this.clearCanvas();
         this.renderSeats();
         this.renderInfo();
@@ -188,29 +198,36 @@ export class SeatSelector {
     private findLeftTopCoord(point1: Coords, point2: Coords): Coords {
         const leftTop = new Coords (
             Math.min(point1.x, point2.x) - this.canvOffset.x,
-            Math.min(point1.y, point2.y) - this.canvOffset.x
+            Math.min(point1.y, point2.y) - this.canvOffset.y
         );
         return leftTop;
     }
     private findRightBottomCoord(point1: Coords, point2: Coords): Coords {
         const rightBottom = new Coords (
             Math.max(point1.x, point2.x) - this.canvOffset.x,
-            Math.max(point1.y, point2.y) - this.canvOffset.x
+            Math.max(point1.y, point2.y) - this.canvOffset.y
         );
         return rightBottom;
     }
     private checkSelectedSeats() {
         for (let seat of this.seats)
-            if (seat.isInsideArea(this.selectedArea) == true) {
-                console.log ( 'Selected seats:' + seat.id );
-                seat.setColor('#66ff99');
-            } else {
-                seat.setColor('green');
-            }
+            if (seat.rect.isInsideArea(this.selectedArea) == true)
+                seat.toggleSelect()
+    }
+    private deleteSelected() {
+        let oldSeats = this.seats
+        this.seats = [];
+        for (let seat of oldSeats) {
+            if (!seat.isSelected())
+                this.seats.push(seat);
+        }
+        oldSeats = [];
     }
     private log(info?: any): void {
+        /*
         console.log(this.selectedArea.begin, this.selectedArea.end);
         console.log(this.seats);
+        */
         if (info != undefined) console.log(info);
     }
 
