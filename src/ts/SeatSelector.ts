@@ -60,7 +60,8 @@ export class SeatSelector {
         const self = this;
         const keyBoardKeyOne = 48;
         const keyBoardEsc = 27;
-        const keyBoardDel = 46
+        const keyBoardDel = 46;
+        const keyBoardEnter = 13;
         document.addEventListener("keypress", function(event : KeyboardEvent) {
             if (event.keyCode == keyBoardEsc) {
                 self.seats = [];
@@ -73,6 +74,11 @@ export class SeatSelector {
                 self.clearCanvas();
                 self.renderSeats();
                 self.renderInfo();
+                return;
+            }
+            if (event.keyCode == keyBoardEnter) {
+                let AppJSON = JSON.stringify(self.toJSON());
+                self.log(AppJSON);
                 return;
             }
             const key = event.which - keyBoardKeyOne;
@@ -237,7 +243,7 @@ export class SeatSelector {
         */
         if (info != undefined) console.log(info);
     }
-    private toJSON(): string {
+    private toJSON(): ISeatSelector {
         let appData: ISeatSelector;
         appData = {
             seats: new Array<IPlace>()
@@ -245,6 +251,6 @@ export class SeatSelector {
         for (let i = 0; i < this.seats.length; i++) {
             appData.seats[i] = (this.seats[i].toJSON());
         }
-        return JSON.stringify(appData);
+        return appData;
     }
 }
