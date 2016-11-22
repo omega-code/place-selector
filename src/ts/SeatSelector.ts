@@ -244,13 +244,8 @@ export class SeatSelector {
         if (info != undefined) console.log(info);
     }
     private toJSON(): ISeatSelector {
-        let appData: ISeatSelector;
-        appData = {
-            seats: new Array<IPlace>()
-        }
-        for (let i = 0; i < this.seats.length; i++) {
-            appData.seats[i] = (this.seats[i].toJSON());
-        }
-        return appData;
+        return { seats: this.seats.map(function(seat: Seat) {
+            return seat.toJSON()})
+        };
     }
 }

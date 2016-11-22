@@ -11,10 +11,10 @@ export interface IPlace {
 
 export class Seat {
     readonly id: number;
-    readonly rowNumber: number;
-    readonly placeInRowNumber: number;
-    readonly isReserved: boolean;
-    readonly reservedBy: string;
+    readonly rowNumber = 0;
+    readonly placeInRowNumber = 0;
+    readonly isReserved = false;
+    readonly reservedBy = '';
     private selected: boolean;
     readonly rect: Rect;
 
@@ -22,11 +22,6 @@ export class Seat {
         this.id = id;
         this.selected = false;
         this.rect = new Rect(x, y, size, size, 'green', '#66ff99', ctx);
-        //TODO
-        this.rowNumber = 0;
-        this.placeInRowNumber = 0;
-        this.isReserved = false;
-        this.reservedBy = '';
     }
     draw(): void {
         this.rect.draw(this.selected);
