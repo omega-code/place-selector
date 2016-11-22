@@ -1,7 +1,13 @@
 import interact = require('interact.js');
 
 import { Area, Coords } from './Coords';
-import { Seat } from './Seat';
+import { Seat, IPlace } from './Seat';
+
+
+
+interface ISeatSelector {
+  seats: IPlace[];
+}
 
 const enum Mode {
     draw = 1,
@@ -54,7 +60,8 @@ export class SeatSelector {
         const self = this;
         const keyBoardKeyOne = 48;
         const keyBoardEsc = 27;
-        const keyBoardDel = 46
+        const keyBoardDel = 46;
+        const keyBoardEnter = 13;
         document.addEventListener("keypress", function(event : KeyboardEvent) {
             if (event.keyCode == keyBoardEsc) {
                 self.seats = [];
@@ -63,9 +70,15 @@ export class SeatSelector {
             }
             if (event.keyCode == keyBoardDel) {
                 self.deleteSelected();
+                console.log(self.toJSON());
                 self.clearCanvas();
                 self.renderSeats();
                 self.renderInfo();
+                return;
+            }
+            if (event.keyCode == keyBoardEnter) {
+                let AppJSON = JSON.stringify(self.toJSON());
+                self.log(AppJSON);
                 return;
             }
             const key = event.which - keyBoardKeyOne;
@@ -230,5 +243,7 @@ export class SeatSelector {
         */
         if (info != undefined) console.log(info);
     }
-
+    private toJSON(): ISeatSelector {
+        return { seats: this.seats.map(seat => seat.toJSON()) };
+    }
 }

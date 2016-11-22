@@ -1,9 +1,23 @@
 import { Rect } from './Rect';
 
+export interface IPlace {
+  id: string;
+  graphicalPosition: { x: number; y: number };
+  rowNumber: number;
+  placeInRowNumber: number;
+  isReserved: boolean;
+  reservedBy: string;
+}
+
 export class Seat {
     readonly id: number;
-    readonly rect: Rect;
+    readonly rowNumber = 0;
+    readonly placeInRowNumber = 0;
+    readonly isReserved = false;
+    readonly reservedBy = '';
     private selected: boolean;
+    readonly rect: Rect;
+
     constructor(id: number, x: number, y: number, size: number, ctx: CanvasRenderingContext2D) {
         this.id = id;
         this.selected = false;
@@ -17,5 +31,15 @@ export class Seat {
     }
     isSelected() {
         return this.selected;
+    }
+    toJSON(): IPlace {
+        return {
+            id: this.id.toString(),
+            graphicalPosition: { x: this.rect.x, y: this.rect.y },
+            rowNumber: this.rowNumber,
+            placeInRowNumber: this.placeInRowNumber,
+            isReserved: this.isReserved,
+            reservedBy: this.reservedBy,
+        }
     }
 };

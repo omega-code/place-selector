@@ -2,8 +2,8 @@ import { Area, Coords } from './Coords';
 
 export class Rect {
     constructor
-        ( private x: number
-        , private y: number
+        ( readonly x: number
+        , readonly y: number
         , private width: number
         , private height: number
         , readonly defaultColor: string
