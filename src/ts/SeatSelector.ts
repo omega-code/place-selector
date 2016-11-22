@@ -244,8 +244,6 @@ export class SeatSelector {
         if (info != undefined) console.log(info);
     }
     private toJSON(): ISeatSelector {
-        return { seats: this.seats.map(function(seat: Seat) {
-            return seat.toJSON()})
-        };
+        return { seats: this.seats.map(seat => seat.toJSON()) };
     }
 }
