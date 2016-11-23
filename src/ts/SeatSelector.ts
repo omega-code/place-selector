@@ -62,7 +62,7 @@ export class SeatSelector {
         const keyBoardEsc = 27;
         const keyBoardDel = 46;
         const keyBoardEnter = 13;
-        document.addEventListener("keypress", function(event : KeyboardEvent) {
+        document.addEventListener("keydown", function(event : KeyboardEvent) {
             if (event.keyCode == keyBoardEsc) {
                 self.seats = [];
                 self.clearCanvas();
@@ -70,7 +70,6 @@ export class SeatSelector {
             }
             if (event.keyCode == keyBoardDel) {
                 self.deleteSelected();
-                console.log(self.toJSON());
                 self.clearCanvas();
                 self.renderSeats();
                 self.renderInfo();
