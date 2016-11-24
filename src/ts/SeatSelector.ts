@@ -77,7 +77,7 @@ export class SeatSelector {
                 return;
             }
             if (event.keyCode == keyBoardEnter) {
-                let AppJSON = JSON.stringify(self.toJSON());
+                const AppJSON = JSON.stringify(self.toJSON());
                 self.log(AppJSON);
                 return;
             }
@@ -127,7 +127,7 @@ export class SeatSelector {
                         event.clientX - self.canvOffset.x,
                         event.clientY - self.canvOffset.y
                     );
-                    for (let seat of self.allSeats) {
+                    for (const seat of self.allSeats) {
                         if (seat.rect.isPointInside(mouseClick)) {
                             seat.toggleSelect();
                             self.renderSeats();
@@ -137,9 +137,9 @@ export class SeatSelector {
             });
     }
     private renderSeats(): void {
-        for (let seat of this.allSeats)
+        for (const seat of this.allSeats)
             seat.draw();
-        for (let seat of this.newSeats)
+        for (const seat of this.newSeats)
             seat.draw();
     }
     private createSeats(): void {
@@ -148,7 +148,7 @@ export class SeatSelector {
         this.newSeats = [];
         for (let i = this.selectedArea.begin.x; i < this.selectedArea.end.x; i += this.placeSize)
             for (let j = this.selectedArea.begin.y; j < this.selectedArea.end.y; j += this.placeSize) {
-                for (let seat of this.allSeats)
+                for (const seat of this.allSeats)
                     if (seat.rect.leftTop.isEqual( new Coords(i, j) )) {
                         isBusy = true;
                         break;
@@ -236,14 +236,14 @@ export class SeatSelector {
         return rightBottom;
     }
     private checkSelectedSeats() {
-        for (let seat of this.allSeats)
+        for (const seat of this.allSeats)
             if (seat.rect.isInsideArea(this.selectedArea) == true)
                 seat.toggleSelect()
     }
     private deleteSelected() {
         let oldSeats = this.allSeats
         this.allSeats = [];
-        for (let seat of oldSeats) {
+        for (const seat of oldSeats) {
             if (!seat.isSelected())
                 this.allSeats.push(seat);
         }
