@@ -52,7 +52,7 @@ export class SeatSelector {
         });
 
         self.ctx = <CanvasRenderingContext2D> this.canv.getContext('2d');
-        if (self.ctx == null) throw Error;
+        if (self.ctx === null) throw Error;
         this.initInteract();
         self.mode = Mode.draw;
         this.initMode();
@@ -64,33 +64,33 @@ export class SeatSelector {
         const keyBoardDel = 46;
         const keyBoardEnter = 13;
         document.addEventListener("keypress", function(event : KeyboardEvent) {
-            if (event.keyCode == keyBoardEsc) {
+            if (event.keyCode === keyBoardEsc) {
                 self.allSeats = [];
                 self.clearCanvas();
                 return;
             }
-            if (event.keyCode == keyBoardDel) {
+            if (event.keyCode === keyBoardDel) {
                 self.deleteSelected();
                 self.clearCanvas();
                 self.renderSeats();
                 self.renderInfo();
                 return;
             }
-            if (event.keyCode == keyBoardEnter) {
+            if (event.keyCode === keyBoardEnter) {
                 const AppJSON = JSON.stringify(self.toJSON());
                 self.log(AppJSON);
                 return;
             }
             const key = event.which - keyBoardKeyOne;
             self.mode = key;
-          if (self.mode == Mode.draw) {
+          if (self.mode === Mode.draw) {
                 interact(self.canv).draggable({
                 snap: {
                     targets: [ self.grid ]
                 },
             });
           }
-          else if (self.mode == Mode.select) {
+          else if (self.mode === Mode.select) {
               interact(self.canv).draggable({
                   snap: false
               });
@@ -122,7 +122,7 @@ export class SeatSelector {
                 self.dragEnd();
             })
             .on('tap', function (event: InteractEvent) {
-                if (self.mode == Mode.select) {
+                if (self.mode === Mode.select) {
                     const mouseClick = new Coords (
                         event.clientX - self.canvOffset.x,
                         event.clientY - self.canvOffset.y
@@ -153,7 +153,7 @@ export class SeatSelector {
                         isBusy = true;
                         break;
                     }
-                if (!isBusy) this.newSeats.push(new Seat(this.nextId++, i, j, this.pixelSize, this.ctx));
+                if (isBusy === false) this.newSeats.push(new Seat(this.nextId++, i, j, this.pixelSize, this.ctx));
                 isBusy = false;
             }
         this.renderSeats();
@@ -197,10 +197,10 @@ export class SeatSelector {
 
         this.calculateSelectedArea();
 
-        if (this.mode == Mode.draw) {
+        if (this.mode === Mode.draw) {
             this.clearCanvas();
             this.createSeats();
-        } else if (this.mode == Mode.select) {
+        } else if (this.mode === Mode.select) {
             this.clearCanvas();
             this.renderSeats();
             this.selectionFrameRender();
@@ -208,11 +208,11 @@ export class SeatSelector {
         this.renderInfo();
     }
     private dragEnd(): void {
-        if(this.mode == Mode.draw) {
+        if(this.mode === Mode.draw) {
             this.allSeats = this.allSeats.concat(this.newSeats);
             this.newSeats = [];
         }
-        if (this.mode == Mode.select) this.checkSelectedSeats();
+        if (this.mode === Mode.select) this.checkSelectedSeats();
         this.clearCanvas();
         this.renderSeats();
         this.renderInfo();
@@ -237,14 +237,14 @@ export class SeatSelector {
     }
     private checkSelectedSeats() {
         for (const seat of this.allSeats)
-            if (seat.rect.isInsideArea(this.selectedArea) == true)
+            if (seat.rect.isInsideArea(this.selectedArea) === true)
                 seat.toggleSelect()
     }
     private deleteSelected() {
         let oldSeats = this.allSeats
         this.allSeats = [];
         for (const seat of oldSeats) {
-            if (!seat.isSelected())
+            if (seat.isSelected() === false)
                 this.allSeats.push(seat);
         }
         oldSeats = [];
@@ -254,7 +254,7 @@ export class SeatSelector {
         console.log(this.selectedArea.begin, this.selectedArea.end);
         console.log(this.seats);
         */
-        if (info != undefined) console.log(info);
+        if (info !== undefined) console.log(info);
     }
     private toJSON(): ISeatSelector {
         return { seats: this.allSeats.map(seat => seat.toJSON()) };
