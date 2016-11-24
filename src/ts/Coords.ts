@@ -5,7 +5,10 @@ class Coords {
         return ( this.x >= point.x && this.y >= point.y );
     }
     isBeforeOrEqual(point: Coords): boolean {
-        return( this.x <= point.x &&  this.y <= point.y );
+        return( this.x <= point.x && this.y <= point.y );
+    }
+    isEqual(point: Coords): boolean {
+        return( this.x === point.x && this.y === point.y );
     }
 }
 interface Area {
