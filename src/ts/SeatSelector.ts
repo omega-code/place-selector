@@ -21,11 +21,13 @@ export class SeatSelector {
     private canvOffset: Coords;
     private ctx: CanvasRenderingContext2D;
     //Seatings array
-    private seats: Seat[];
+    private allSeats = [] as Seat[];
+    private newSeats = [] as Seat[];
     private selectedArea: Area;
     private dragStartCoords: Coords;
     private dragEndCoords: Coords;
     private grid: SnapFunction;
+    private nextId = 1;
 
     private mode: Mode;
 
@@ -40,7 +42,6 @@ export class SeatSelector {
         }
         self.dragStartCoords = Coords.empty;
         self.dragEndCoords = Coords.empty;
-        self.seats = [];
         self.canv = canvas;
         self.canvOffset = new Coords(
             canvas.getBoundingClientRect().left,
@@ -64,13 +65,12 @@ export class SeatSelector {
         const keyBoardEnter = 13;
         document.addEventListener("keypress", function(event : KeyboardEvent) {
             if (event.keyCode == keyBoardEsc) {
-                self.seats = [];
+                self.allSeats = [];
                 self.clearCanvas();
                 return;
             }
             if (event.keyCode == keyBoardDel) {
                 self.deleteSelected();
-                console.log(self.toJSON());
                 self.clearCanvas();
                 self.renderSeats();
                 self.renderInfo();
@@ -127,7 +127,7 @@ export class SeatSelector {
                         event.clientX - self.canvOffset.x,
                         event.clientY - self.canvOffset.y
                     );
-                    for (let seat of self.seats) {
+                    for (let seat of self.allSeats) {
                         if (seat.rect.isPointInside(mouseClick)) {
                             seat.toggleSelect();
                             self.renderSeats();
@@ -137,15 +137,24 @@ export class SeatSelector {
             });
     }
     private renderSeats(): void {
-        for (let seat of this.seats)
+        for (let seat of this.allSeats)
+            seat.draw();
+        for (let seat of this.newSeats)
             seat.draw();
     }
     private createSeats(): void {
         this.clearCanvas();
-        this.seats = [];
-        for (let i = this.selectedArea.begin.x, id = 1; i < this.selectedArea.end.x; i += this.placeSize)
+        let isBusy = false;
+        this.newSeats = [];
+        for (let i = this.selectedArea.begin.x; i < this.selectedArea.end.x; i += this.placeSize)
             for (let j = this.selectedArea.begin.y; j < this.selectedArea.end.y; j += this.placeSize) {
-                this.seats.push(new Seat(id++, i, j, this.pixelSize, this.ctx));
+                for (let seat of this.allSeats)
+                    if (seat.rect.leftTop.isEqual( new Coords(i, j) )) {
+                        isBusy = true;
+                        break;
+                    }
+                if (!isBusy) this.newSeats.push(new Seat(this.nextId++, i, j, this.pixelSize, this.ctx));
+                isBusy = false;
             }
         this.renderSeats();
     }
@@ -164,7 +173,6 @@ export class SeatSelector {
         this.ctx.fillStyle = "#00F";
         this.ctx.font = "italic 35pt Arial";
         this.ctx.fillText("MODE: " + modeName, 20 + this.canvOffset.x, 30 + this.canvOffset.y);
-        this.log();
     }
     private selectionFrameRender() {
         this.ctx.beginPath();
@@ -190,6 +198,7 @@ export class SeatSelector {
         this.calculateSelectedArea();
 
         if (this.mode == Mode.draw) {
+            this.clearCanvas();
             this.createSeats();
         } else if (this.mode == Mode.select) {
             this.clearCanvas();
@@ -199,6 +208,10 @@ export class SeatSelector {
         this.renderInfo();
     }
     private dragEnd(): void {
+        if(this.mode == Mode.draw) {
+            this.allSeats = this.allSeats.concat(this.newSeats);
+            this.newSeats = [];
+        }
         if (this.mode == Mode.select) this.checkSelectedSeats();
         this.clearCanvas();
         this.renderSeats();
@@ -223,16 +236,16 @@ export class SeatSelector {
         return rightBottom;
     }
     private checkSelectedSeats() {
-        for (let seat of this.seats)
+        for (let seat of this.allSeats)
             if (seat.rect.isInsideArea(this.selectedArea) == true)
                 seat.toggleSelect()
     }
     private deleteSelected() {
-        let oldSeats = this.seats
-        this.seats = [];
+        let oldSeats = this.allSeats
+        this.allSeats = [];
         for (let seat of oldSeats) {
             if (!seat.isSelected())
-                this.seats.push(seat);
+                this.allSeats.push(seat);
         }
         oldSeats = [];
     }
@@ -244,6 +257,6 @@ export class SeatSelector {
         if (info != undefined) console.log(info);
     }
     private toJSON(): ISeatSelector {
-        return { seats: this.seats.map(seat => seat.toJSON()) };
+        return { seats: this.allSeats.map(seat => seat.toJSON()) };
     }
 }
