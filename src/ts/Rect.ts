@@ -2,8 +2,8 @@ import { Area, Coords } from './Coords';
 
 export class Rect {
     constructor
-        ( readonly x: number
-        , readonly y: number
+        ( private x: number
+        , private y: number
         , private width: number
         , private height: number
         , readonly defaultColor: string
@@ -13,6 +13,16 @@ export class Rect {
     draw(selected: boolean): void {
         this.ctx.fillStyle = selected ? this.selectionColor : this.defaultColor ;
         this.ctx.fillRect(this.x, this.y, this.width, this.height);
+        this.ctx.restore();
+    }
+    moveOn(point: Coords, save?: boolean): void {
+        this.ctx.fillStyle = this.selectionColor;
+        this.ctx.fillRect(this.x + point.x, this.y + point.y, this.width, this.height);
+        if (save === true) {
+            this.x += point.x ;
+            this.y += point.y;
+        }
+
         this.ctx.restore();
     }
     isPointInside(point: Coords): boolean {

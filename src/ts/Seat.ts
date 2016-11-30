@@ -29,13 +29,13 @@ export class Seat {
     toggleSelect(): void {
         this.selected = this.selected ?  false : true;
     }
-    isSelected() {
+    get isSelected() {
         return this.selected;
     }
     toJSON(): IPlace {
         return {
             id: this.id.toString(),
-            graphicalPosition: { x: this.rect.x, y: this.rect.y },
+            graphicalPosition: this.rect.leftTop,
             rowNumber: this.rowNumber,
             placeInRowNumber: this.placeInRowNumber,
             isReserved: this.isReserved,
