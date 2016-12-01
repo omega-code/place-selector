@@ -73,7 +73,7 @@ export class SeatSelector {
             if (event.keyCode === keyBoardDel) {
                 self.deleteSelected();
                 self.clearCanvas();
-                self.renderSeats(true);
+                self.renderSeats();
                 self.renderInfo();
                 return;
             }
@@ -100,7 +100,7 @@ export class SeatSelector {
           self.selectedArea.end = Coords.empty;
 
           self.clearCanvas();
-          self.renderSeats(true);
+          self.renderSeats();
           self.renderInfo();
         });
     }
@@ -131,23 +131,22 @@ export class SeatSelector {
                     for (const seat of self.allSeats) {
                         if (seat.rect.isPointInside(mouseClick)) {
                             seat.toggleSelect();
-                            self.renderSeats(true);
+                            self.renderSeats();
                         }
                     }
                 }
             });
     }
-    private renderSeats(renderSelected: boolean): void {
-        if (renderSelected === false) {
-            for (const seat of this.allSeats)
-                if (seat.isSelected === false)
-                    seat.draw();
-                return;
-        }
+    private renderSeats(): void {
         for (const seat of this.allSeats)
             seat.draw();
         for (const seat of this.newSeats)
             seat.draw();
+    }
+    private renderUnselectedSeats(): void {
+        for (const seat of this.allSeats)
+            if (!seat.isSelected)
+                seat.draw();
     }
     private createSeats(): void {
         this.clearCanvas();
@@ -160,10 +159,10 @@ export class SeatSelector {
                         isBusy = true;
                         break;
                     }
-                if (isBusy === false) this.newSeats.push(new Seat(this.nextId++, i, j, this.pixelSize, this.ctx));
+                if (!isBusy) this.newSeats.push(new Seat(this.nextId++, i, j, this.pixelSize, this.ctx));
                 isBusy = false;
             }
-        this.renderSeats(true);
+        this.renderSeats();
     }
     public renderInfo(): void {
         let modeName: string;
@@ -207,8 +206,8 @@ export class SeatSelector {
                 event.clientY - this.canvOffset.y
             );
             for (const seat of this.allSeats) {
-                if (seat.rect.isPointInside(mouseClick) === true)
-                    if (seat.isSelected === true) {
+                if (seat.rect.isPointInside(mouseClick))
+                    if (seat.isSelected) {
                         this.mode = Mode.drag;
                         break;
                     }
@@ -233,15 +232,15 @@ export class SeatSelector {
         if (this.mode === Mode.draw) {
             this.createSeats();
         } else if (this.mode === Mode.select) {
-            this.renderSeats(true);
+            this.renderSeats();
             this.selectionFrameRender();
         }
         else if (this.mode === Mode.drag) {
             let movedOn = new Coords(this.dragEndCoords.x - this.dragStartCoords.x,
                 this.dragEndCoords.y - this.dragStartCoords.y).roundToScale(this.placeSize);
-            this.renderSeats(false);
+            this.renderUnselectedSeats();
             for (let seat of this.allSeats) {
-                if(seat.isSelected === true)
+                if(seat.isSelected)
                     seat.rect.moveOn( new Coords(movedOn.x, movedOn.y) )
             }
         }
@@ -258,9 +257,9 @@ export class SeatSelector {
                 this.dragEndCoords.y - this.dragStartCoords.y).roundToScale(this.placeSize);
             let save = (!this.isOverlaped(movedOn));
 
-            this.renderSeats(false);
+            this.renderUnselectedSeats();
             for (let seat of this.allSeats) {
-                if(seat.isSelected === true)
+                if(seat.isSelected)
                     seat.rect.moveOn( new Coords(movedOn.x, movedOn.y), save )
             }
 
@@ -270,7 +269,7 @@ export class SeatSelector {
             });
         }
         this.clearCanvas();
-        this.renderSeats(true);
+        this.renderSeats();
         this.renderInfo();
     }
     private calculateSelectedArea(): void {
@@ -296,11 +295,11 @@ export class SeatSelector {
         let y = 0;
 
         for (let seat of this.allSeats)
-            if(seat.isSelected === true) {
+            if(seat.isSelected) {
                 x = seat.rect.leftTop.x + movedOn.x;
                 y = seat.rect.leftTop.y + movedOn.y;
                 for (let seat of this.allSeats) {
-                    if (seat.isSelected === false)
+                    if (seat.isSelected)
                         if (seat.rect.leftTop.x === x && seat.rect.leftTop.y === y) return true;
                 }
             }
@@ -308,14 +307,14 @@ export class SeatSelector {
     }
     private checkSelectedSeats() {
         for (const seat of this.allSeats)
-            if (seat.rect.isInsideArea(this.selectedArea) === true)
+            if (seat.rect.isInsideArea(this.selectedArea))
                 seat.toggleSelect()
     }
     private deleteSelected() {
         let oldSeats = this.allSeats
         this.allSeats = [];
         for (const seat of oldSeats) {
-            if (seat.isSelected === false)
+            if (!seat.isSelected)
                 this.allSeats.push(seat);
         }
         oldSeats = [];
