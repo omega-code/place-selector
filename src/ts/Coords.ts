@@ -10,6 +10,12 @@ class Coords {
     isEqual(point: Coords): boolean {
         return( this.x === point.x && this.y === point.y );
     }
+    roundToScale(scale: number): Coords {
+        return new Coords(
+            Math.round(this.x / scale) * scale,
+            Math.round(this.y / scale) * scale
+        );
+    }
 }
 interface Area {
     begin: Coords;

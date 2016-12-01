@@ -237,17 +237,13 @@ export class SeatSelector {
             this.selectionFrameRender();
         }
         else if (this.mode === Mode.drag) {
-            //need to refactor
-        let move = new Coords(Math.round((this.dragEndCoords.x - this.dragStartCoords.x)/this.placeSize),
-            Math.round((this.dragEndCoords.y - this.dragStartCoords.y)/this.placeSize));
-            this.log(this.dragEndCoords.y);
-            this.log(this.dragStartCoords.y);
+            let movedOn = new Coords(this.dragEndCoords.x - this.dragStartCoords.x,
+                this.dragEndCoords.y - this.dragStartCoords.y).roundToScale(this.placeSize);
             this.renderSeats(false);
             for (let seat of this.allSeats) {
                 if(seat.isSelected === true)
-                    seat.rect.moveOn( new Coords(move.x*this.placeSize, move.y*this.placeSize), false )
+                    seat.rect.moveOn( new Coords(movedOn.x, movedOn.y) )
             }
-
         }
         this.renderInfo();
     }
@@ -258,6 +254,16 @@ export class SeatSelector {
         }
         if (this.mode === Mode.select) this.checkSelectedSeats();
         if (this.mode === Mode.drag) {
+            let movedOn = new Coords(this.dragEndCoords.x - this.dragStartCoords.x,
+                this.dragEndCoords.y - this.dragStartCoords.y).roundToScale(this.placeSize);
+            let save = (!this.isOverlaped(movedOn));
+
+            this.renderSeats(false);
+            for (let seat of this.allSeats) {
+                if(seat.isSelected === true)
+                    seat.rect.moveOn( new Coords(movedOn.x, movedOn.y), save )
+            }
+
             this.mode = Mode.select;
             interact(this.canv).draggable({
                 snap: false
@@ -284,6 +290,21 @@ export class SeatSelector {
             Math.max(point1.y, point2.y) - this.canvOffset.y
         );
         return rightBottom;
+    }
+    private isOverlaped(movedOn: Coords): boolean {
+        let x = 0;
+        let y = 0;
+
+        for (let seat of this.allSeats)
+            if(seat.isSelected === true) {
+                x = seat.rect.leftTop.x + movedOn.x;
+                y = seat.rect.leftTop.y + movedOn.y;
+                for (let seat of this.allSeats) {
+                    if (seat.isSelected === false)
+                        if (seat.rect.leftTop.x === x && seat.rect.leftTop.y === y) return true;
+                }
+            }
+        return false;
     }
     private checkSelectedSeats() {
         for (const seat of this.allSeats)
