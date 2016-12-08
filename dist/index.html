@@ -1,10 +1,22 @@
 <!DOCTYPE html>
 <html lang="en">
     <head>
-    <meta charset="utf-8" />
+        <title>Seat Selector</title>
+        <meta charset="utf-8" />
         <link rel="stylesheet" type="text/css" href="../src/css/style.css">
+
     </head>
     <body>
+        <div id="app">
+            <div class="btn-group">
+                <button type="button" class="btn btn-primary" data-bind="click: function() { this.auditorium.changeMode(1); }">Создать места</button>
+                <button type="button" class="btn btn-primary" data-bind="click: function() { this.auditorium.changeMode(2); }">Выбрать места</button>
+                <button type="button" class="btn btn-primary" data-bind="click: function() { this.auditorium.deleteSelected(); }">Удалить выбранные</button>
+                <button type="button" class="btn btn-primary" data-bind="click: logJSON">Вывести JSON</button>
+            </div>
+
+            <canvas></canvas>
+        </div>
         <script src="bundle.js"></script>
     </body>
 </html>

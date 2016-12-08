@@ -9,7 +9,7 @@ interface ISeatSelector {
   seats: IPlace[];
 }
 
-const enum Mode {
+export const enum Mode {
     draw = 1,
     select,
     drag
@@ -55,55 +55,6 @@ export class SeatSelector {
         self.ctx = <CanvasRenderingContext2D> this.canv.getContext('2d');
         if (self.ctx === null) throw Error;
         this.initInteract();
-        self.mode = Mode.draw;
-        this.initMode();
-    }
-    private initMode() {
-        const self = this;
-        const keyBoardKeyOne = 48;
-        const keyBoardEsc = 27;
-        const keyBoardDel = 46;
-        const keyBoardEnter = 13;
-        document.addEventListener("keydown", function(event : KeyboardEvent) {
-            if (event.keyCode === keyBoardEsc) {
-                self.allSeats = [];
-                self.clearCanvas();
-                return;
-            }
-            if (event.keyCode === keyBoardDel) {
-                self.deleteSelected();
-                self.clearCanvas();
-                self.renderSeats();
-                self.renderInfo();
-                return;
-            }
-            if (event.keyCode === keyBoardEnter) {
-                const AppJSON = JSON.stringify(self.toJSON());
-                self.log(AppJSON);
-                return;
-            }
-            const key = event.which - keyBoardKeyOne;
-            if(key === 1 || key === 2) self.mode = key;
-          if (self.mode === Mode.draw) {
-                interact(self.canv).draggable({
-                snap: {
-                    targets: [ self.grid ]
-                },
-            });
-          }
-          else if (self.mode === Mode.select) {
-              interact(self.canv).draggable({
-                  snap: false
-              });
-          }
-
-
-          //Моргание с зажатым шифтом из за этого места
-          self.selectedArea.begin = self.selectedArea.end = Coords.empty;
-          self.clearCanvas();
-          self.renderSeats();
-          self.renderInfo();
-        });
     }
     private initInteract() {
         const self = this;
@@ -165,6 +116,27 @@ export class SeatSelector {
             }
         this.renderSeats();
     }
+    public changeMode(mode: Mode): void {
+        this.mode = mode;
+
+        if (this.mode === Mode.draw) {
+              interact(this.canv).draggable({
+              snap: {
+                  targets: [ this.grid ]
+              },
+          });
+        }
+        else if (this.mode === Mode.select) {
+            interact(this.canv).draggable({
+                snap: false
+            });
+        }
+
+        this.selectedArea.begin = this.selectedArea.end = Coords.empty;
+        this.clearCanvas();
+        this.renderSeats();
+        this.renderInfo();
+    }
     public renderInfo(): void {
         let modeName: string;
         switch (this.mode) {
@@ -182,7 +154,8 @@ export class SeatSelector {
         }
         this.ctx.fillStyle = "#00F";
         this.ctx.font = "italic 35pt Arial";
-        this.ctx.fillText("MODE: " + modeName, 20 + this.canvOffset.x, 30 + this.canvOffset.y);
+
+        if(!(modeName === '')) this.ctx.fillText("MODE: " + modeName, 20 + this.canvOffset.x, 30 + this.canvOffset.y);
     }
     private selectionFrameRender() {
         this.ctx.beginPath();
@@ -200,8 +173,6 @@ export class SeatSelector {
         this.ctx.clearRect(0, 0, this.ctx.canvas.width, this.ctx.canvas.height);
     }
     private dragStart(event: InteractEvent): void {
-
-        if(!event.shiftKey) for (const seat of this.allSeats) seat.unSelect();
 
         if(this.mode === Mode.select) {
             const mouseClick = new Coords (
@@ -223,6 +194,8 @@ export class SeatSelector {
                     targets: [ this.grid ]
                 },
             });
+        } else {
+            if(!event.shiftKey) for (const seat of this.allSeats) seat.unselect();
         }
         this.dragStartCoords = new Coords(event.pageX, event.pageY);
     }
@@ -302,7 +275,7 @@ export class SeatSelector {
                 x = seat.rect.leftTop.x + movedOn.x;
                 y = seat.rect.leftTop.y + movedOn.y;
                 for (let seat of this.allSeats) {
-                    if (seat.isSelected)
+                    if (!seat.isSelected)
                         if (seat.rect.leftTop.x === x && seat.rect.leftTop.y === y) return true;
                 }
             }
@@ -313,7 +286,7 @@ export class SeatSelector {
             if (seat.rect.isInsideArea(this.selectedArea))
                 seat.toggleSelect()
     }
-    private deleteSelected() {
+    public deleteSelected() {
         let oldSeats = this.allSeats
         this.allSeats = [];
         for (const seat of oldSeats) {
@@ -321,15 +294,12 @@ export class SeatSelector {
                 this.allSeats.push(seat);
         }
         oldSeats = [];
+
+        this.clearCanvas();
+        this.renderSeats();
+        this.renderInfo();
     }
-    private log(info?: any): void {
-        /*
-        console.log(this.selectedArea.begin, this.selectedArea.end);
-        console.log(this.seats);
-        */
-        if (info !== undefined) console.log(info);
-    }
-    private toJSON(): ISeatSelector {
+    public toJSON(): ISeatSelector {
         return { seats: this.allSeats.map(seat => seat.toJSON()) };
     }
 }

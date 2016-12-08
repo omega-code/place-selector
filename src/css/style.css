@@ -1,6 +1,7 @@
 canvas {
   border: solid 2px gray;
 
-  -ms-touch-action: none;
-      touch-action: none;
+}
+#app {
+    margin: 20px;
 }

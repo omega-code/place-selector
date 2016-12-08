@@ -1,19 +1,20 @@
 {
-    "name": "place-selector",
-    "version": "0.1.0",
-    "description": "",
-    "main": "src/script.js",
-    "scripts": {
-        "test": "echo \"Error: no test specified\" && exit 1"
-    },
-    "author": "omega-code",
-    "license": "ISC",
-    "dependencies": {
-        "interact.js": "^1.2.6"
-    },
-    "devDependencies": {
-        "webpack": "^1.13.3",
-        "ts-loader": "^0.9.5",
-        "typescript": "^2.0.6"
-    }
+  "name": "place-selector",
+  "version": "0.1.0",
+  "description": "",
+  "main": "src/script.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "author": "omega-code",
+  "license": "ISC",
+  "dependencies": {
+    "interact.js": "^1.2.6",
+    "knockout": "^3.4.1"
+  },
+  "devDependencies": {
+    "webpack": "^1.13.3",
+    "ts-loader": "^0.9.5",
+    "typescript": "^2.0.6"
+  }
 }

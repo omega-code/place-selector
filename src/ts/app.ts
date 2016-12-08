@@ -1,13 +1,26 @@
-import { SeatSelector } from './SeatSelector';
+import ko = require('knockout');
+import { SeatSelector, Mode } from './SeatSelector';
 
-const canv = document.createElement("canvas");
-document.body.appendChild(canv);
+const canv = document.getElementsByTagName("canvas")[0];
 canv.width = document.body.clientWidth;
 canv.height = window.innerHeight * 0.7;
-canv.style.margin = "20px";
-try {
-    const auditorium = new SeatSelector(canv, 30, 45);
-    auditorium.renderInfo();
-} catch(error) {
-    console.log("Wrong context type");
+
+
+class SelectorViewModel {
+    auditorium: SeatSelector;
+    mode: KnockoutObservable<Mode>;
+    constructor() {
+        this.mode = ko.observable(Mode.select);
+        try {
+            this.auditorium = new SeatSelector(canv, 30, 45);
+        } catch(error) {
+            console.log("Wrong context type");
+        }
+    }
+    logJSON(): void {
+        const AppJSON = JSON.stringify(this.auditorium.toJSON());
+        console.log(AppJSON);
+    }
 }
+
+ko.applyBindings(new SelectorViewModel());
