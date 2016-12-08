@@ -83,7 +83,7 @@ export class SeatSelector {
                 return;
             }
             const key = event.which - keyBoardKeyOne;
-            self.mode = key;
+            if(key === 1 || key === 2) self.mode = key;
           if (self.mode === Mode.draw) {
                 interact(self.canv).draggable({
                 snap: {
@@ -96,9 +96,10 @@ export class SeatSelector {
                   snap: false
               });
           }
-          self.selectedArea.begin = Coords.empty;
-          self.selectedArea.end = Coords.empty;
 
+
+          //Моргание с зажатым шифтом из за этого места
+          self.selectedArea.begin = self.selectedArea.end = Coords.empty;
           self.clearCanvas();
           self.renderSeats();
           self.renderInfo();
@@ -199,6 +200,8 @@ export class SeatSelector {
         this.ctx.clearRect(0, 0, this.ctx.canvas.width, this.ctx.canvas.height);
     }
     private dragStart(event: InteractEvent): void {
+
+        if(!event.shiftKey) for (const seat of this.allSeats) seat.unSelect();
 
         if(this.mode === Mode.select) {
             const mouseClick = new Coords (

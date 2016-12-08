@@ -29,6 +29,9 @@ export class Seat {
     toggleSelect(): void {
         this.selected = this.selected ?  false : true;
     }
+    unSelect(): void {
+        this.selected = false;
+    }
     get isSelected() {
         return this.selected;
     }
