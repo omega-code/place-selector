@@ -17,7 +17,8 @@
       "src/ts/Seat.ts",
       "src/ts/SeatSelector.ts",
       "src/ts/app.ts",
-      "src/ts/typings/interact-patched.d.ts"
+      "src/ts/typings/interact-patched.d.ts",
+      "src/ts/typings/knockout-patched.d.ts"
   ],
     "compileOnSave": false
 }

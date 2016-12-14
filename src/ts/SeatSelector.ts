@@ -9,10 +9,11 @@ interface ISeatSelector {
   seats: IPlace[];
 }
 
-const enum Mode {
+export const enum Mode {
     draw = 1,
     select,
-    drag
+    drag,
+    delete
 };
 
 export class SeatSelector {
@@ -55,54 +56,6 @@ export class SeatSelector {
         self.ctx = <CanvasRenderingContext2D> this.canv.getContext('2d');
         if (self.ctx === null) throw Error;
         this.initInteract();
-        self.mode = Mode.draw;
-        this.initMode();
-    }
-    private initMode() {
-        const self = this;
-        const keyBoardKeyOne = 48;
-        const keyBoardEsc = 27;
-        const keyBoardDel = 46;
-        const keyBoardEnter = 13;
-        document.addEventListener("keydown", function(event : KeyboardEvent) {
-            if (event.keyCode === keyBoardEsc) {
-                self.allSeats = [];
-                self.clearCanvas();
-                return;
-            }
-            if (event.keyCode === keyBoardDel) {
-                self.deleteSelected();
-                self.clearCanvas();
-                self.renderSeats();
-                self.renderInfo();
-                return;
-            }
-            if (event.keyCode === keyBoardEnter) {
-                const AppJSON = JSON.stringify(self.toJSON());
-                self.log(AppJSON);
-                return;
-            }
-            const key = event.which - keyBoardKeyOne;
-            self.mode = key;
-          if (self.mode === Mode.draw) {
-                interact(self.canv).draggable({
-                snap: {
-                    targets: [ self.grid ]
-                },
-            });
-          }
-          else if (self.mode === Mode.select) {
-              interact(self.canv).draggable({
-                  snap: false
-              });
-          }
-          self.selectedArea.begin = Coords.empty;
-          self.selectedArea.end = Coords.empty;
-
-          self.clearCanvas();
-          self.renderSeats();
-          self.renderInfo();
-        });
     }
     private initInteract() {
         const self = this;
@@ -164,24 +117,25 @@ export class SeatSelector {
             }
         this.renderSeats();
     }
-    public renderInfo(): void {
-        let modeName: string;
-        switch (this.mode) {
-            case 1:
-                modeName = 'draw';
-                break;
-            case 2:
-                modeName = 'select';
-                break;
-            case 3:
-                modeName = 'drag';
-                break;
-            default:
-                modeName = '';
+    public changeMode(mode: Mode): void {
+        this.mode = mode;
+
+        if (this.mode === Mode.draw) {
+              interact(this.canv).draggable({
+              snap: {
+                  targets: [ this.grid ]
+              },
+          });
         }
-        this.ctx.fillStyle = "#00F";
-        this.ctx.font = "italic 35pt Arial";
-        this.ctx.fillText("MODE: " + modeName, 20 + this.canvOffset.x, 30 + this.canvOffset.y);
+        else if (this.mode === Mode.select || this.mode === Mode.delete) {
+            interact(this.canv).draggable({
+                snap: false
+            });
+        }
+
+        this.selectedArea.begin = this.selectedArea.end = Coords.empty;
+        this.clearCanvas();
+        this.renderSeats();
     }
     private selectionFrameRender() {
         this.ctx.beginPath();
@@ -220,6 +174,8 @@ export class SeatSelector {
                     targets: [ this.grid ]
                 },
             });
+        } else {
+            if(!event.shiftKey) for (const seat of this.allSeats) seat.unselect();
         }
         this.dragStartCoords = new Coords(event.pageX, event.pageY);
     }
@@ -231,7 +187,7 @@ export class SeatSelector {
 
         if (this.mode === Mode.draw) {
             this.createSeats();
-        } else if (this.mode === Mode.select) {
+        } else if (this.mode === Mode.select || this.mode === Mode.delete) {
             this.renderSeats();
             this.selectionFrameRender();
         }
@@ -244,7 +200,6 @@ export class SeatSelector {
                     seat.rect.moveOn( new Coords(movedOn.x, movedOn.y) )
             }
         }
-        this.renderInfo();
     }
     private dragEnd(): void {
         if(this.mode === Mode.draw) {
@@ -252,6 +207,7 @@ export class SeatSelector {
             this.newSeats = [];
         }
         if (this.mode === Mode.select) this.checkSelectedSeats();
+        if (this.mode === Mode.delete) this.deleteSeatsInArea(this.selectedArea);
         if (this.mode === Mode.drag) {
             let movedOn = new Coords(this.dragEndCoords.x - this.dragStartCoords.x,
                 this.dragEndCoords.y - this.dragStartCoords.y).roundToScale(this.placeSize);
@@ -270,7 +226,6 @@ export class SeatSelector {
         }
         this.clearCanvas();
         this.renderSeats();
-        this.renderInfo();
     }
     private calculateSelectedArea(): void {
         this.selectedArea.begin = this.findLeftTopCoord(this.dragStartCoords, this.dragEndCoords);
@@ -299,7 +254,7 @@ export class SeatSelector {
                 x = seat.rect.leftTop.x + movedOn.x;
                 y = seat.rect.leftTop.y + movedOn.y;
                 for (let seat of this.allSeats) {
-                    if (seat.isSelected)
+                    if (!seat.isSelected)
                         if (seat.rect.leftTop.x === x && seat.rect.leftTop.y === y) return true;
                 }
             }
@@ -310,7 +265,7 @@ export class SeatSelector {
             if (seat.rect.isInsideArea(this.selectedArea))
                 seat.toggleSelect()
     }
-    private deleteSelected() {
+    public deleteSelected() {
         let oldSeats = this.allSeats
         this.allSeats = [];
         for (const seat of oldSeats) {
@@ -318,15 +273,23 @@ export class SeatSelector {
                 this.allSeats.push(seat);
         }
         oldSeats = [];
+
+        this.clearCanvas();
+        this.renderSeats();
     }
-    private log(info?: any): void {
-        /*
-        console.log(this.selectedArea.begin, this.selectedArea.end);
-        console.log(this.seats);
-        */
-        if (info !== undefined) console.log(info);
+    public deleteSeatsInArea(area: Area) {
+        let oldSeats = this.allSeats
+        this.allSeats = [];
+        for (const seat of oldSeats) {
+            if (!seat.rect.isInsideArea(area))
+                this.allSeats.push(seat);
+        }
+        oldSeats = [];
+
+        this.clearCanvas();
+        this.renderSeats();
     }
-    private toJSON(): ISeatSelector {
+    public toJSON(): ISeatSelector {
         return { seats: this.allSeats.map(seat => seat.toJSON()) };
     }
 }
