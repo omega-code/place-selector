@@ -6,7 +6,7 @@ class SelectorViewModel {
     mode: KnockoutObservable<Mode>;
     constructor() {
         const canv = document.getElementsByTagName("canvas")[0];
-        canv.width = document.body.clientWidth;
+        canv.width = document.body.clientWidth * 0.98;
         canv.height = window.innerHeight * 0.7;
 
         this.mode = ko.observable(Mode.select);

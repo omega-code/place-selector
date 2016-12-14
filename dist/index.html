@@ -11,10 +11,11 @@
     <body>
         <div id="app">
             <div class="btn-group">
-                <button type="button" class="btn btn-primary" data-bind="click: function() { this.auditorium.changeMode(1); }">Создать места</button>
-                <button type="button" class="btn btn-primary" data-bind="click: function() { this.auditorium.changeMode(2); }">Выбрать места</button>
-                <button type="button" class="btn btn-primary" data-bind="click: function() { this.auditorium.deleteSelected(); }">Удалить выбранные</button>
-                <button type="button" class="btn btn-primary" data-bind="click: logJSON">Вывести JSON</button>
+                <button type="button" class="btn btn-success" data-bind="click: function() { this.auditorium.changeMode(1); }">Создать места</button>
+                <button type="button" class="btn btn-success" data-bind="click: function() { this.auditorium.changeMode(2); }">Выбрать места</button>
+                <button type="button" class="btn btn-success" data-bind="click: function() { this.auditorium.deleteSelected(); }">Удалить выбранные</button>
+                <button type="button" class="btn btn-success" data-bind="click: function() { this.auditorium.changeMode(4); }">Выделить и удалить</button>                
+                <button type="button" class="btn btn-success" data-bind="click: logJSON">Вывести JSON</button>
             </div>
 
             <canvas></canvas>

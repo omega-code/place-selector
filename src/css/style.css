@@ -1,6 +1,8 @@
+.btn-group {
+    display: flex;
+}
 canvas {
   border: solid 2px gray;
-
 }
 #app {
     margin: 20px;
