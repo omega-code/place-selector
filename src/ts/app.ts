@@ -1,6 +1,8 @@
 import ko = require('knockout');
 import { SeatSelector, Mode } from './SeatSelector';
 
+const app = document.getElementById("app");
+
 class SelectorViewModel {
     auditorium: SeatSelector;
     mode: KnockoutObservable<Mode>;
@@ -22,4 +24,4 @@ class SelectorViewModel {
     }
 }
 
-ko.applyBindings(new SelectorViewModel());
+ko.applyBindings(new SelectorViewModel(), app);

@@ -207,15 +207,7 @@ export class SeatSelector {
             this.newSeats = [];
         }
         if (this.mode === Mode.select) this.checkSelectedSeats();
-        if (this.mode === Mode.delete) {
-            let oldSeats = this.allSeats
-            this.allSeats = [];
-            for (const seat of oldSeats) {
-                if (!seat.rect.isInsideArea(this.selectedArea))
-                    this.allSeats.push(seat);
-            }
-            oldSeats = [];
-        }
+        if (this.mode === Mode.delete) this.deleteSeatsInArea(this.selectedArea);
         if (this.mode === Mode.drag) {
             let movedOn = new Coords(this.dragEndCoords.x - this.dragStartCoords.x,
                 this.dragEndCoords.y - this.dragStartCoords.y).roundToScale(this.placeSize);
@@ -285,11 +277,11 @@ export class SeatSelector {
         this.clearCanvas();
         this.renderSeats();
     }
-    public deleteSeatsInSelectedArea() {
+    public deleteSeatsInArea(area: Area) {
         let oldSeats = this.allSeats
         this.allSeats = [];
         for (const seat of oldSeats) {
-            if (!seat.rect.isInsideArea(this.selectedArea))
+            if (!seat.rect.isInsideArea(area))
                 this.allSeats.push(seat);
         }
         oldSeats = [];
