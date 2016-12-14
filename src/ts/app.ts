@@ -1,15 +1,14 @@
 import ko = require('knockout');
 import { SeatSelector, Mode } from './SeatSelector';
 
-const canv = document.getElementsByTagName("canvas")[0];
-canv.width = document.body.clientWidth;
-canv.height = window.innerHeight * 0.7;
-
-
 class SelectorViewModel {
     auditorium: SeatSelector;
     mode: KnockoutObservable<Mode>;
     constructor() {
+        const canv = document.getElementsByTagName("canvas")[0];
+        canv.width = document.body.clientWidth;
+        canv.height = window.innerHeight * 0.7;
+
         this.mode = ko.observable(Mode.select);
         try {
             this.auditorium = new SeatSelector(canv, 30, 45);
