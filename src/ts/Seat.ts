@@ -23,18 +23,23 @@ export class Seat {
         this.selected = false;
         this.rect = new Rect(x, y, size, size, 'green', '#66ff99', ctx);
     }
+
     draw(): void {
         this.rect.draw(this.selected);
     }
+
     toggleSelect(): void {
         this.selected = this.selected ?  false : true;
     }
+
     unselect(): void {
         this.selected = false;
     }
+
     get isSelected() {
         return this.selected;
     }
+    
     toJSON(): IPlace {
         return {
             id: this.id.toString(),
